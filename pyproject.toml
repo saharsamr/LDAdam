@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name='LDAdam'
+version='1.0.0'
+
+authors = [
+    {name = "Thomas ROBERT", email = "thomas.robert.x21@polytechnique.edu"}
+]
+
+description = 'LDAdam optimizer'
+readme = "README.md"
+keywords = [
+    "deep learning",
+    "adaptive optimization",
+    "memory efficiency",
+    "low-rank learning",
+]
+
+license = {file = "LICENSE"}
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+requires-python = ">=3.9"
+dependencies = [
+    "torch>=2.0.0"
+]
+
+[project.urls]
+Repository = 'https://github.com/ThomasROBERTparis/LowDimensionalAdam'
