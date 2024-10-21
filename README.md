@@ -13,7 +13,7 @@ from LowDimensionalAdam import LDAdamW
 
 # define param groups as fullrank_params and lowrank_params
 optimizer = LDAdamW(
-    [{'params': fullrank_params, 'enable_lowrank': False},
+    params=[{'params': fullrank_params, 'enable_lowrank': False},
     {'params': lowrank_params, 'enable_lowrank': True, 'rank':16, 'rho':0.908}],
     lr=0.001,
     betas=(0.908,0.99),
@@ -29,14 +29,14 @@ optimizer = LDAdamW(
 To install LDAdam latest stable version from source, please run:
 
 ```shell
-pip3 install git+https://github.com/ThomasROBERTparis/LowDimensionalAdam.git
+pip3 install git+https://github.com/IST-DASLab/LDAdam.git
 ```
 
 To clone the project and install it as a Python package in a new conda environment named LDAdam, please run:
 
 ```shell
-git clone https://github.com/ThomasROBERTparis/LowDimensionalAdam.git
-cd LowDimensionalAdam
+git clone https://github.com/IST-DASLab/LDAdam.git
+cd LDAdam
 source install.sh
 conda activate LDAdam
 ```
@@ -55,7 +55,7 @@ For reproductibility purposes, we provide the [scripts](./experiments/glue_finet
 
 ### Pre-training Llama Model on the C4 dataset
 
-To conduct our experiments on Llama pre-training on the C4 dataset, we follow the training procedure provided in the [ReLora project](https://github.com/Guitaricet/relora) and adapted for the [GaLore project](https://github.com/jiaweizzhao/GaLore). The additional dependencies required can be found in the file [c4_requirements.txt](./experiments/c4_pretraining/c4_requirements.txt). To install them, please run:
+To conduct our experiments on Llama pre-training on the C4 dataset, we follow the training procedure provided by the [ReLora project](https://github.com/Guitaricet/relora) and adapted for the [GaLore project](https://github.com/jiaweizzhao/GaLore). The additional dependencies required can be found in the file [c4_requirements.txt](./experiments/c4_pretraining/c4_requirements.txt). To install them, please run:
 
 ```shell
 pip3 install -r experiments/c4_pretraining/c4_requirements.txt

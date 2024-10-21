@@ -21,7 +21,7 @@ setup(
         'Programming Language :: Python :: 3.12',
     ],
 
-    url='https://github.com/ThomasROBERTparis/LowDimensionalAdam',
+    url='https://github.com/IST-DASLab/LDAdam',
 
     packages=find_packages(exclude=['experiments']),
 

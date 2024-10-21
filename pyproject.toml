@@ -36,4 +36,4 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = 'https://github.com/ThomasROBERTparis/LowDimensionalAdam'
+Repository = 'https://github.com/IST-DASLab/LDAdam'
