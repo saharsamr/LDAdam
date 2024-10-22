@@ -1,6 +1,6 @@
 # Low-Dimensional Adam
 
-This repository contains a reference torch implementation of the [LDAdam optimizer](./ldadamw_torch/ldadamw.py) as proposed in the paper: [LDAdam: Adaptive Optimization from Low-Dimensional Gradient Statistics]().
+This repository contains a reference torch implementation of the [LDAdam optimizer](./ldadamw_torch/ldadamw.py) as proposed in the paper: [LDAdam: Adaptive Optimization from Low-Dimensional Gradient Statistics](https://arxiv.org/abs/2410.16103).
 
 **Abstract:** We introduce LDAdam, a memory-efficient optimizer for training large models, that performs adaptive optimization steps within lower dimensional subspaces, while consistently exploring the full parameter space during training. This strategy keeps the optimizer's memory footprint to a fraction of the model size. LDAdam relies on a new projection-aware update rule for the optimizer states that allows for transitioning between subspaces, i.e., estimation of the statistics of the projected gradients. To mitigate the errors due to low-rank projection, LDAdam integrates a new generalized error feedback mechanism, which explicitly accounts for both gradient and optimizer state compression. We prove the convergence of LDAdam under standard assumptions, and show that LDAdam allows for accurate and efficient fine-tuning and pre-training of language models.
 
@@ -68,3 +68,13 @@ For reproductibility purposes, we provide the [scripts](./experiments/c4_pretrai
 To run our experiments on fine-tuning the Llama2 7B model on the [GSM8K dataset](https://github.com/openai/grade-school-math), we use the training pipeline provided by the [MicroAdam project](https://github.com/IST-DASLab/MicroAdam/), based on [MosaicML's LLM foundry framework](https://github.com/mosaicml/llm-foundry).
 
 ## Citation
+```bibtex
+@misc{robert2024ldadamadaptiveoptimizationlowdimensional,
+      title={LDAdam: Adaptive Optimization from Low-Dimensional Gradient Statistics}, 
+      author={Thomas Robert and Mher Safaryan and Ionut-Vlad Modoranu and Dan Alistarh},
+      year={2024},
+      eprint={2410.16103},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2410.16103}, 
+}

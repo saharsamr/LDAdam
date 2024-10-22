@@ -1,6 +1,6 @@
 # LDAdam
 
-Torch implementation of the LDAdam algorithm. For further details regarding the algorithm, please refer to: [LDAdam: Adaptive Optimization from Low-Dimensional Gradient Statistics]().
+Torch implementation of the LDAdam algorithm. For further details regarding the algorithm, please refer to: [LDAdam: Adaptive Optimization from Low-Dimensional Gradient Statistics](https://arxiv.org/abs/2410.16103).
 
 **Parameters**
 
