@@ -245,17 +245,15 @@ class LDAdamW(torch.optim.Optimizer):
             bias2_correction = 1 - beta2**completed_steps
     
             mat_change_of_subspace.mul_(mat_change_of_subspace)
-            square_mat_change_of_subspace = mat_change_of_subspace.mul(mat_change_of_subspace)
-            del mat_change_of_subspace
 
             st['v'].mul_(1/bias2_correction)
             st['v'].addcmul_(st['m'], st['m'], value=-1/(bias1_correction**2))
 
             if left_proj :
-                st['v'] = torch.matmul(square_mat_change_of_subspace, st['v'])
+                st['v'] = torch.matmul(mat_change_of_subspace, st['v'])
             elif right_proj :
-                st['v'] = torch.matmul(st['v'], square_mat_change_of_subspace)
-            del square_mat_change_of_subspace
+                st['v'] = torch.matmul(st['v'], mat_change_of_subspace)
+            del mat_change_of_subspace
             
             st['v'].addcmul_(lowdim_updated_momentum, lowdim_updated_momentum, value=1/(bias1_correction**2))
             st['v'].mul_(bias2_correction)
