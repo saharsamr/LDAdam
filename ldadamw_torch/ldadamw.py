@@ -37,7 +37,7 @@ class LDAdamW(torch.optim.Optimizer):
             raise ValueError("Invalid projection method: {}".format(proj_method))
         if not isinstance(error_feedback, bool):
             raise ValueError("Invalid error feedback value: {}".format(error_feedback))
-        
+
         #Construct optimizer
         defaults = dict(lr=lr, betas=betas, weight_decay=weight_decay, eps=eps)
         super(LDAdamW, self).__init__(params, defaults)
@@ -52,7 +52,7 @@ class LDAdamW(torch.optim.Optimizer):
             for p in group['params']:
                 if not p.requires_grad:
                     continue
-                
+
                 st = self.state[p]
 
                 #AdamW hyperparameters
@@ -97,7 +97,7 @@ class LDAdamW(torch.optim.Optimizer):
                 if proj_method == 'power_iteration': st['use_poweriteration'] = True
 
                 st['error_feedback'] = group.get('error_feedback', error_feedback)
-        
+
         self.completed_steps = 0
 
     @torch.no_grad()
@@ -148,7 +148,7 @@ class LDAdamW(torch.optim.Optimizer):
         st['v'].mul_(beta2)
         st['v'].addcmul_(grad, grad, value=(1 - beta2))
 
-        #Model update
+        ### MODEL UPDATE
         descent_direction = st['v'].div(1 - beta2**(completed_steps+1))
         descent_direction.sqrt_()
         descent_direction.add_(eps)
@@ -187,8 +187,7 @@ class LDAdamW(torch.optim.Optimizer):
         use_svd_lowrank = st['use_svd_lowrank']
         use_poweriteration = st['use_poweriteration']
 
-
-        #Learning subspace adaptation
+        ### LEARNING SUBSPACE ADAPTATION
         if left_proj : projector = low_rank_projector(rank=rank, proj_type='left')
         elif right_proj : projector = low_rank_projector(rank=rank, proj_type='right')
 
@@ -209,15 +208,13 @@ class LDAdamW(torch.optim.Optimizer):
 
         lowdim_grad = projector.project(grad)
 
-
-        #Error feedback loading - gradient compression
+        ### ERROR BUFFER LOADING - gradient compression
         if st['error_feedback'] :
             lowrank_grad = projector.project_back(lowdim_grad)
             grad.sub_(lowrank_grad) #store error in grad tensor
             del lowrank_grad
 
-
-        #Optimizer states projection-aware update - gradient first-order statistic
+        ### OPTIMIZER STATES PROJECTION-AWARE UPDATE - gradient first-order statistic
         if left_proj :
             mat_change_of_subspace = projector.ortho_matrix.t() @ previous_projector.ortho_matrix
             lowdim_updated_momentum = mat_change_of_subspace @ st['m']
@@ -226,8 +223,7 @@ class LDAdamW(torch.optim.Optimizer):
             mat_change_of_subspace = previous_projector.ortho_matrix @ projector.ortho_matrix.t()
             lowdim_updated_momentum = st['m'] @ mat_change_of_subspace
 
-
-        #Generalized error feedback loading - optimizer states compression
+        ### GENERALIZED ERROR BUFFER LOADING - optimizer states compression
         if st['error_feedback']:
             lowrank_previous_momentum = previous_projector.project_back(st['m'])
             grad.add_(lowrank_previous_momentum, alpha=(beta1 / (1 - beta1))) #store error in grad tensor
@@ -237,13 +233,12 @@ class LDAdamW(torch.optim.Optimizer):
 
         del previous_projector
 
-
-        #Optimizer states Adam-type update
+        ### OPTIMIZER STATES PROJECTION-AWARE UPDATE - gradient second-order statistic
         if completed_steps > 0:
             #Optimizer states projection-aware update - gradient second-order statistic
             bias1_correction = 1 - beta1**completed_steps
             bias2_correction = 1 - beta2**completed_steps
-    
+
             mat_change_of_subspace.mul_(mat_change_of_subspace)
 
             st['v'].mul_(1/bias2_correction)
@@ -262,14 +257,14 @@ class LDAdamW(torch.optim.Optimizer):
             st['m'].copy_(lowdim_updated_momentum)
             del lowdim_updated_momentum
 
+        ### OPTIMIZER STATES ADAM-TYPE UPDATE
         st['m'].mul_(beta1)
         st['m'].add_(lowdim_grad, alpha=(1 - beta1))
 
         st['v'].mul_(beta2)
-        st['v'].addcmul_(lowdim_grad, lowdim_grad, value=(1 - beta2))         
+        st['v'].addcmul_(lowdim_grad, lowdim_grad, value=(1 - beta2))
 
-
-        #Model update
+        ### MODEL UPDATE
         lowdim_descent_direction = st['v'].div(1 - beta2**(completed_steps+1))
         lowdim_descent_direction.sqrt_()
         lowdim_descent_direction.add_(eps) 
@@ -285,7 +280,7 @@ class LDAdamW(torch.optim.Optimizer):
 
         p.mul_(1 - lr * wd) #decoupled weight decay
         p.add_(descent_direction, alpha=-lr)
-        
+
         del descent_direction
 
 
@@ -301,6 +296,7 @@ class LDAdamW(torch.optim.Optimizer):
 
 
 
+    ### GRADIENT ACCUMULATION AND ERROR BUFFER LOADING
     def zero_grad(self):
         for group in self.param_groups:
             error_feedback = group.get('error_feedback', self.error_feedback)
