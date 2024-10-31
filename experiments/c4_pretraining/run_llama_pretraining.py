@@ -95,10 +95,22 @@ def parse_args(args):
     return args
 
 
+
 @torch.no_grad()
 def evaluate_model(model, preprocess_batched, pad_idx, global_rank, world_size, device, batch_size):
     _time = time.time()
-    val_data = datasets.load_dataset("c4", "en", split="validation", streaming=True) #DGX
+    
+    from requests.exceptions import ConnectionError
+    for attempt in range(5):
+        try:
+            val_data = datasets.load_dataset("c4", "en", split="validation", streaming=True) #DGX
+        except ConnectionError as e:
+                    if attempt < 5 - 1:
+                        print(f"Connection error: {e}. Retrying...")
+                        time.sleep(5)
+                    else:
+                        raise e
+                    
     val_data = val_data.shuffle(seed=42)
     logger.info(f"Loaded validation dataset in {time.time() - _time:.2f} seconds")
 
@@ -182,8 +194,17 @@ def main(args):
         logger.info(f"{k:30} {v}")
     logger.info("*" * 40)
 
-    data = datasets.load_dataset("allenai/c4", "en", split="train", streaming=True)
-
+    from requests.exceptions import ConnectionError
+    for attempt in range(5):
+        try:
+            data = datasets.load_dataset("allenai/c4", "en", split="train", streaming=True)
+        except ConnectionError as e:
+                    if attempt < 5 - 1:
+                        print(f"Connection error: {e}. Retrying...")
+                        time.sleep(5)
+                    else:
+                        raise e
+                    
     seed_for_shuffle = 42 
     
     logger.info(f"Shuffling data with seed {seed_for_shuffle}")
@@ -228,8 +249,19 @@ def main(args):
     if args.continue_from is not None:
         logger.info("*" * 40)
         logger.info(f"Loading model from {args.continue_from}")
-        checkpoint_path = os.path.join(args.continue_from, "pytorch_model.bin")
-        model.load_state_dict(torch.load(checkpoint_path, map_location="cpu"), strict=True)
+        # checkpoint_path = os.path.join(args.continue_from, "pytorch_model.bin")
+        # model.load_state_dict(torch.load(checkpoint_path, map_location="cpu"), strict=True)
+
+        from safetensors.torch import load_file
+
+        checkpoint_path = os.path.join(args.continue_from, "model.safetensors")
+
+        # Load the model weights from the safetensors file
+        state_dict = load_file(checkpoint_path)
+
+        # Load the state dictionary into the model
+        model.load_state_dict(state_dict, strict=True)
+
         logger.info(f"Model successfully loaded (strict=True policy)")
 
         if os.path.exists(os.path.join(args.continue_from, "training_state.json")):
@@ -303,6 +335,7 @@ def main(args):
         logger.info(f"Total params with low_rank enabled: {sum(p.numel() for p in lowrank_params) / 1_000_000:.2f}M")
     logger.info(f"Saving model to {args.save_dir} every {args.save_every} update steps")
     
+
     if args.optimizer.lower() == "adamw":
         optimizer = torch.optim.AdamW(trainable_params, lr=args.lr, betas=(args.beta1,args.beta2), eps=args.eps, weight_decay=args.weight_decay)
     elif args.optimizer.lower() == "ldadamw":
@@ -328,6 +361,15 @@ def main(args):
         warmup_steps=args.warmup_steps,
         min_lr_ratio=args.min_lr_ratio,
     )
+
+    if args.continue_from is not None:
+        checkpoint_path = os.path.join(args.continue_from, 'optimizer.pt')
+        checkpoint = torch.load(checkpoint_path, map_location=device)
+        optimizer.load_state_dict(checkpoint['optimizer'])
+        logger.info(f"Optimizer state loaded from {checkpoint_path}")
+
+        scheduler.load_state_dict(checkpoint['scheduler'])
+        logger.info(f"Scheduler state loaded from {checkpoint_path}")
 
     if not args.single_gpu:
         model: LlamaForCausalLM = torch.nn.parallel.DistributedDataParallel(
