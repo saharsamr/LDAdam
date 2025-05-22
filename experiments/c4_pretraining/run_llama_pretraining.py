@@ -420,6 +420,14 @@ def main(args):
         if args.grad_clipping != 0.0: torch.nn.utils.clip_grad_norm_(trainable_params, args.grad_clipping)
 
         if global_rank == 0: pbar.update(1)
+
+        if update_step == 0:
+            t1 = time.time()
+        if update_step == (2000 + 1):
+            print('=' * 10)
+            print(f'10 updates: {time.time() - t1}')
+            print('=' * 10)
+            exit(0)
         
         optimizer.step()
         scheduler.step()
