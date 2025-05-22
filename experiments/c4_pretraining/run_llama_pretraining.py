@@ -185,7 +185,7 @@ def main(args):
             
     # initialize wandb without config (it is passed later)
     if global_rank == 0:
-        wandb.init(project=args.wandb_project, job_type=args.wandb_job_type, name=args.wandb_run_name)
+        wandb.init(project=args.wandb_project+'-timing', job_type=args.wandb_job_type, name=args.wandb_run_name)
         
     logger.info(f"Using dist with rank {global_rank} (only rank 0 will log)")
     logger.info("*" * 40)
