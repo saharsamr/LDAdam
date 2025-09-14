@@ -1,13 +1,13 @@
 import torch
 
 class projector:
-    def __init__(self, rank, proj_type='std'):
+    def __init__(self, rank, proj_type='std', update_interval=None):
         self.rank = rank
         self.proj_type = proj_type
         self.ortho_matrix = None
         self.st_step_size = -10000
         self.update_rank = 1
-        self.subspace_update = 100
+        self.subspace_update = update_interval
 
     def project(self, full_rank_grad):
         if self.proj_type == 'right':

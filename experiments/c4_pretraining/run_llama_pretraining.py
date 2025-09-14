@@ -82,6 +82,7 @@ def parse_args(args):
     parser.add_argument("--wandb_project", type=str, default="LDAdam-pretraining")
     parser.add_argument("--wandb_job_type", type=str, default="Llama-pretraining")
     parser.add_argument("--wandb_run_name", type=str, default="LDAdam-Llama-pretraining")
+    parser.add_argument("--update_interval", type=int, default=1)
     
     # disable ddp, single_gpu
     parser.add_argument("--single_gpu", default=False, action="store_true")
@@ -349,6 +350,7 @@ def main(args):
 
             proj_type=args.proj_type,
             proj_method=args.proj_method,
+            update_interval=args.update_interval,
 
             error_feedback=not(args.no_error_feedback),
             )

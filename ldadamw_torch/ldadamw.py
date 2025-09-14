@@ -16,6 +16,7 @@ class LDAdamW(torch.optim.Optimizer):
         proj_type: str = 'std',
         proj_method: str = 'power_iteration',
         error_feedback: bool = True,
+        update_interval: int = 1,
     ):
 
         #Sanity check
@@ -46,6 +47,7 @@ class LDAdamW(torch.optim.Optimizer):
         self.lr = lr 
         self.weight_decay = weight_decay
         self.error_feedback = error_feedback
+        self.update_interval = update_interval
 
         #Initialize optimizer states
         for group in self.param_groups:
@@ -76,13 +78,13 @@ class LDAdamW(torch.optim.Optimizer):
                 st['left_proj'], st['right_proj'] = False, False # Setting an optimizer state to a string value is not standard practice and is generally not recommended
                 if proj_type =='right' or (layer_shape[0]>layer_shape[1] and proj_type =='std') or (layer_shape[0]<layer_shape[1] and proj_type =='reverse_std'):
                     st['right_proj'] = True
-                    st['previous_projector']  = low_rank_projector(rank=st["rank"], proj_type='right')
+                    st['previous_projector']  = low_rank_projector(rank=st["rank"], proj_type='right', update_interval=self.update_interval)
                     lowdim_shape = (layer_shape[0], st['rank'])
                     if st['rank'] > layer_shape[1] :
                         raise ValueError("For right projection, rank cannot be greater than the number of columns in the weight matrix")
                 elif proj_type=='left' or (layer_shape[0]<=layer_shape[1] and proj_type =='std') or (layer_shape[0]>=layer_shape[1] and proj_type =='reverse_std'):
                     st['left_proj'] = True
-                    st['previous_projector']  = low_rank_projector(rank=st["rank"], proj_type='left')
+                    st['previous_projector']  = low_rank_projector(rank=st["rank"], proj_type='left', update_interval=self.update_interval)
                     lowdim_shape = (st['rank'], layer_shape[1])
                     if st['rank'] > layer_shape[0] :
                         raise ValueError("For left projection, rank cannot be greater than the number of rows in the weight matrix")
@@ -190,8 +192,8 @@ class LDAdamW(torch.optim.Optimizer):
         use_random_walk = st['use_random_walk']
 
         ### LEARNING SUBSPACE ADAPTATION
-        if left_proj : projector = low_rank_projector(rank=rank, proj_type='left')
-        elif right_proj : projector = low_rank_projector(rank=rank, proj_type='right')
+        if left_proj : projector = low_rank_projector(rank=rank, proj_type='left', update_interval=self.update_interval)
+        elif right_proj : projector = low_rank_projector(rank=rank, proj_type='right', update_interval=self.update_interval)
 
         previous_projector = st['previous_projector']
 
