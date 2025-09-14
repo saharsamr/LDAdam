@@ -83,7 +83,6 @@ class projector:
             print("\n================RandomWalk LDAdam================")
         self.ortho_matrix = init
         if (step % self.subspace_update) == 0:
-            print('\nstep:', step)
             if self.ortho_matrix.dtype != torch.float:
                 float_data = False
                 original_type = self.ortho_matrix.dtype
@@ -108,7 +107,6 @@ class projector:
             if not float_data:
                 self.ortho_matrix = self.ortho_matrix.to(original_type)
         else:
-            print('\n no update')
             pass
 
     def rank_k_matrix_estimation(self, matrix, k=1):
