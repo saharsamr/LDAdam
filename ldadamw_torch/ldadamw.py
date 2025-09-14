@@ -204,7 +204,7 @@ class LDAdamW(torch.optim.Optimizer):
             if use_svd :
                 projector.get_orthogonal_matrix_svd(b, svd_lowrank=use_svd_lowrank)
             elif use_poweriteration :
-                projector.power_iteration(b, init=previous_projector.ortho_matrix)
+                projector.power_iteration(b, init=previous_projector.ortho_matrix, step=self.completed_steps)
 
         lowdim_grad = projector.project(grad)
 
