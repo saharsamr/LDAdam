@@ -77,6 +77,7 @@ class projector:
     #         self.ortho_matrix = projection_map
 
     def power_iteration(self, full_rank_grad, init, step, intermediate_orthogonalization=False):
+        self.ortho_matrix = init
         if (step % self.subspace_update) == 0:
             if self.ortho_matrix.dtype != torch.float:
                 float_data = False

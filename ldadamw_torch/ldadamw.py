@@ -194,11 +194,9 @@ class LDAdamW(torch.optim.Optimizer):
         previous_projector = st['previous_projector']
 
         if completed_steps==0 :
-            print("\n=================First Iteration=================")
             projector.get_orthogonal_matrix_svd(grad, svd_lowrank=use_svd_lowrank) #init power iteration process with SVD
             previous_projector.ortho_matrix = torch.zeros_like(projector.ortho_matrix)
         else :
-            print("\n=================Next Iterations=================")
             b = previous_projector.project_back(st['m'])
             b.div_(1-beta1**completed_steps)
             b.mul_(rho)
@@ -206,7 +204,6 @@ class LDAdamW(torch.optim.Optimizer):
             if use_svd :
                 projector.get_orthogonal_matrix_svd(b, svd_lowrank=use_svd_lowrank)
             elif use_poweriteration :
-                print("Power Iteration! Boom!")
                 projector.power_iteration(b, init=previous_projector.ortho_matrix, step=self.completed_steps)
 
         lowdim_grad = projector.project(grad)
