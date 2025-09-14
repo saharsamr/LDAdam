@@ -24,6 +24,7 @@ from loguru import logger
 from pept_utils import training_utils, args_utils
 from pept_utils.dataloader import PreprocessedIterableDataset
 from pept_utils.modeling_llama import LlamaForCausalLM
+from transformers import GenerationConfig
 
 from ldadamw_torch import LDAdamW
 
@@ -381,7 +382,15 @@ def main(args):
 
     # global steps and others are defined above
     pad_idx = tokenizer.pad_token_id
-    model.module.generation_config.pad_token_id = tokenizer.pad_token_id #replace unvalid -1 from config file
+    # model.module.generation_config.pad_token_id = tokenizer.pad_token_id #replace unvalid -1 from config file
+    model.generation_config = GenerationConfig(
+        pad_token_id=tokenizer.pad_token_id,
+        eos_token_id=tokenizer.eos_token_id,
+    )
+    model.module.generation_config = GenerationConfig(
+        pad_token_id=tokenizer.pad_token_id,
+        eos_token_id=tokenizer.eos_token_id,
+    )
     update_time = time.time()
     local_step = 0  # when continue_from is used, local_step != global_step
 
