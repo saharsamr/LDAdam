@@ -104,7 +104,7 @@ def evaluate_model(model, preprocess_batched, pad_idx, global_rank, world_size, 
     from requests.exceptions import ConnectionError
     for attempt in range(5):
         try:
-            val_data = datasets.load_dataset("c4", "en", split="validation", streaming=True) #DGX
+            val_data = datasets.load_dataset("allenai/c4", "en", split="validation", streaming=True) #DGX
         except ConnectionError as e:
                     if attempt < 5 - 1:
                         print(f"Connection error: {e}. Retrying...")
