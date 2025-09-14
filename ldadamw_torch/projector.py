@@ -7,7 +7,7 @@ class projector:
         self.ortho_matrix = None
         self.st_step_size = -10000
         self.update_rank = 1
-        self.subspace_update = 50
+        self.subspace_update = 100
 
     def project(self, full_rank_grad):
         if self.proj_type == 'right':
