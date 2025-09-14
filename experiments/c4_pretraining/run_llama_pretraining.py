@@ -432,11 +432,11 @@ def main(args):
 
         if update_step == 0:
             t1 = time.time()
-        if update_step == (2000 + 1):
-            print('=' * 10)
-            print(f'10 updates: {time.time() - t1}')
-            print('=' * 10)
-            exit(0)
+        # if update_step == (2000 + 1):
+        #     print('=' * 10)
+        #     print(f'10 updates: {time.time() - t1}')
+        #     print('=' * 10)
+        #     exit(0)
         
         optimizer.step()
         scheduler.step()

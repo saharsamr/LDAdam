@@ -78,36 +78,36 @@ class projector:
             projection_map = Gram_Schmidt(projection_map)
             self.ortho_matrix = projection_map
 
-    # def power_iteration(self, full_rank_grad, init, step, intermediate_orthogonalization=False):
-    #     if step == 1:
-    #         print("\n================RandomWalk LDAdam================")
-    #     self.ortho_matrix = init
-    #     if (step % self.subspace_update) == 0:
-    #         if self.ortho_matrix.dtype != torch.float:
-    #             float_data = False
-    #             original_type = self.ortho_matrix.dtype
-    #             self.ortho_matrix = self.ortho_matrix.float()
-    #         else:
-    #             float_data = True
-    #
-    #         random_vector = torch.randn_like(self.ortho_matrix)
-    #         tangent_vector = random_vector
-    #
-    #         U, Sigma, V = self.rank_k_matrix_estimation(tangent_vector, k=self.update_rank)
-    #
-    #         self.ortho_matrix = torch.matmul(
-    #             torch.matmul(
-    #                 torch.concat([torch.matmul(self.ortho_matrix, V), U], 1),
-    #                 torch.concat([torch.cos(self.st_step_size * Sigma), torch.sin(self.st_step_size * Sigma)], 0)
-    #             ).reshape((self.ortho_matrix.shape[0]), Sigma.shape[0]), V.t()
-    #         ) + torch.matmul(
-    #             self.ortho_matrix, (torch.eye(V.shape[0]).to("cuda") - torch.matmul(V, V.t()))
-    #         )
-    #
-    #         if not float_data:
-    #             self.ortho_matrix = self.ortho_matrix.to(original_type)
-    #     else:
-    #         pass
+    def random_walk(self, full_rank_grad, init, step, intermediate_orthogonalization=False):
+        if step == 1:
+            print("\n================RandomWalk LDAdam================")
+        self.ortho_matrix = init
+        if (step % self.subspace_update) == 0:
+            if self.ortho_matrix.dtype != torch.float:
+                float_data = False
+                original_type = self.ortho_matrix.dtype
+                self.ortho_matrix = self.ortho_matrix.float()
+            else:
+                float_data = True
+
+            random_vector = torch.randn_like(self.ortho_matrix)
+            tangent_vector = random_vector
+
+            U, Sigma, V = self.rank_k_matrix_estimation(tangent_vector, k=self.update_rank)
+
+            self.ortho_matrix = torch.matmul(
+                torch.matmul(
+                    torch.concat([torch.matmul(self.ortho_matrix, V), U], 1),
+                    torch.concat([torch.cos(self.st_step_size * Sigma), torch.sin(self.st_step_size * Sigma)], 0)
+                ).reshape((self.ortho_matrix.shape[0]), Sigma.shape[0]), V.t()
+            ) + torch.matmul(
+                self.ortho_matrix, (torch.eye(V.shape[0]).to("cuda") - torch.matmul(V, V.t()))
+            )
+
+            if not float_data:
+                self.ortho_matrix = self.ortho_matrix.to(original_type)
+        else:
+            pass
 
     def rank_k_matrix_estimation(self, matrix, k=1):
 

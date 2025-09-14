@@ -33,7 +33,7 @@ class LDAdamW(torch.optim.Optimizer):
             raise ValueError("Invalid rho value: {}".format(rho))
         if proj_type not in ['std', 'left', 'right', 'reverse_std']:
             raise ValueError("Invalid projection type: {}".format(proj_type))
-        if not isinstance(proj_method, str) or proj_method not in ['svd', 'svd_lowrank', 'power_iteration']:
+        if not isinstance(proj_method, str) or proj_method not in ['svd', 'svd_lowrank', 'power_iteration', 'random_walk']:
             raise ValueError("Invalid projection method: {}".format(proj_method))
         if not isinstance(error_feedback, bool):
             raise ValueError("Invalid error feedback value: {}".format(error_feedback))
@@ -91,10 +91,11 @@ class LDAdamW(torch.optim.Optimizer):
                 st['v'] = torch.zeros(lowdim_shape, device=p.device, dtype=p.dtype)
 
                 proj_method = group.get('proj_method', proj_method)
-                st['use_svd'], st['use_svd_lowrank'], st['use_poweriteration'] = False, False, False # Setting an optimizer state to a string value is not standard practice and is generally not recommended
+                st['use_svd'], st['use_svd_lowrank'], st['use_poweriteration'], st['use_random_walk'] = False, False, False, False # Setting an optimizer state to a string value is not standard practice and is generally not recommended
                 if proj_method == 'svd' or proj_method  == 'svd_lowrank' : st['use_svd'] = True
                 if proj_method  == 'svd_lowrank': st['use_svd_lowrank'] = True
                 if proj_method == 'power_iteration': st['use_poweriteration'] = True
+                if proj_method == 'random_walk': st['use_random_walk'] = True
 
                 st['error_feedback'] = group.get('error_feedback', error_feedback)
 
@@ -186,6 +187,7 @@ class LDAdamW(torch.optim.Optimizer):
         use_svd = st['use_svd']
         use_svd_lowrank = st['use_svd_lowrank']
         use_poweriteration = st['use_poweriteration']
+        use_random_walk = st['use_random_walk']
 
         ### LEARNING SUBSPACE ADAPTATION
         if left_proj : projector = low_rank_projector(rank=rank, proj_type='left')
@@ -205,6 +207,8 @@ class LDAdamW(torch.optim.Optimizer):
                 projector.get_orthogonal_matrix_svd(b, svd_lowrank=use_svd_lowrank)
             elif use_poweriteration :
                 projector.power_iteration(b, init=previous_projector.ortho_matrix, step=self.completed_steps)
+            elif use_random_walk:
+                projector.random_walk(b, init=previous_projector.ortho_matrix, step=self.completed_steps)
 
         lowdim_grad = projector.project(grad)
 
