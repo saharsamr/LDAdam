@@ -55,59 +55,59 @@ class projector:
         self.ortho_matrix = ortho_matrix
 
 
-    # def power_iteration(self, matrix, init, step, intermediate_orthogonalization=False):
-    #     if step == 1:
-    #         print("\n================Original LDAdam================")
-    #     if self.proj_type == 'right':
-    #         U = matrix @ init.t()
-    #         if intermediate_orthogonalization : # Not necessary for computing right singular vectors
-    #             U = Gram_Schmidt(U)
-    #         projection_map = matrix.t() @ U
-    #         del U
-    #
-    #         projection_map = Gram_Schmidt(projection_map)
-    #         self.ortho_matrix = projection_map.t()
-    #
-    #     elif self.proj_type == 'left':
-    #         V = matrix.t() @ init
-    #         if intermediate_orthogonalization : # Not necessary for computing left singular vectors
-    #             V = Gram_Schmidt(V)
-    #         projection_map = matrix @ V
-    #         del V
-    #
-    #         projection_map = Gram_Schmidt(projection_map)
-    #         self.ortho_matrix = projection_map
-
-    def power_iteration(self, full_rank_grad, init, step, intermediate_orthogonalization=False):
+    def power_iteration(self, matrix, init, step, intermediate_orthogonalization=False):
         if step == 1:
-            print("\n================RandomWalk LDAdam================")
-        self.ortho_matrix = init
-        if (step % self.subspace_update) == 0:
-            if self.ortho_matrix.dtype != torch.float:
-                float_data = False
-                original_type = self.ortho_matrix.dtype
-                self.ortho_matrix = self.ortho_matrix.float()
-            else:
-                float_data = True
+            print("\n================Original LDAdam================")
+        if self.proj_type == 'right':
+            U = matrix @ init.t()
+            if intermediate_orthogonalization : # Not necessary for computing right singular vectors
+                U = Gram_Schmidt(U)
+            projection_map = matrix.t() @ U
+            del U
 
-            random_vector = torch.randn_like(self.ortho_matrix)
-            tangent_vector = random_vector
+            projection_map = Gram_Schmidt(projection_map)
+            self.ortho_matrix = projection_map.t()
 
-            U, Sigma, V = self.rank_k_matrix_estimation(tangent_vector, k=self.update_rank)
+        elif self.proj_type == 'left':
+            V = matrix.t() @ init
+            if intermediate_orthogonalization : # Not necessary for computing left singular vectors
+                V = Gram_Schmidt(V)
+            projection_map = matrix @ V
+            del V
 
-            self.ortho_matrix = torch.matmul(
-                torch.matmul(
-                    torch.concat([torch.matmul(self.ortho_matrix, V), U], 1),
-                    torch.concat([torch.cos(self.st_step_size * Sigma), torch.sin(self.st_step_size * Sigma)], 0)
-                ).reshape((self.ortho_matrix.shape[0]), Sigma.shape[0]), V.t()
-            ) + torch.matmul(
-                self.ortho_matrix, (torch.eye(V.shape[0]).to("cuda") - torch.matmul(V, V.t()))
-            )
+            projection_map = Gram_Schmidt(projection_map)
+            self.ortho_matrix = projection_map
 
-            if not float_data:
-                self.ortho_matrix = self.ortho_matrix.to(original_type)
-        else:
-            pass
+    # def power_iteration(self, full_rank_grad, init, step, intermediate_orthogonalization=False):
+    #     if step == 1:
+    #         print("\n================RandomWalk LDAdam================")
+    #     self.ortho_matrix = init
+    #     if (step % self.subspace_update) == 0:
+    #         if self.ortho_matrix.dtype != torch.float:
+    #             float_data = False
+    #             original_type = self.ortho_matrix.dtype
+    #             self.ortho_matrix = self.ortho_matrix.float()
+    #         else:
+    #             float_data = True
+    #
+    #         random_vector = torch.randn_like(self.ortho_matrix)
+    #         tangent_vector = random_vector
+    #
+    #         U, Sigma, V = self.rank_k_matrix_estimation(tangent_vector, k=self.update_rank)
+    #
+    #         self.ortho_matrix = torch.matmul(
+    #             torch.matmul(
+    #                 torch.concat([torch.matmul(self.ortho_matrix, V), U], 1),
+    #                 torch.concat([torch.cos(self.st_step_size * Sigma), torch.sin(self.st_step_size * Sigma)], 0)
+    #             ).reshape((self.ortho_matrix.shape[0]), Sigma.shape[0]), V.t()
+    #         ) + torch.matmul(
+    #             self.ortho_matrix, (torch.eye(V.shape[0]).to("cuda") - torch.matmul(V, V.t()))
+    #         )
+    #
+    #         if not float_data:
+    #             self.ortho_matrix = self.ortho_matrix.to(original_type)
+    #     else:
+    #         pass
 
     def rank_k_matrix_estimation(self, matrix, k=1):
 
